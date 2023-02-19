@@ -27,7 +27,7 @@ load_dotenv(BASE_DIR / '.env')
 # SECURITY WARNING: don't run with debug turned on in production!
 # DEBUG = True
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS').split(' ') 
+ALLOWED_HOSTS = ['*']
 
 # Using environment
 
