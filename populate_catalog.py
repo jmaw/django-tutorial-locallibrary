@@ -1,24 +1,13 @@
-"""
-Script intended to populate the DB
-Created by JAMI
-EPS-UAM 2023
-"""
-
 import os
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'locallibrary.settings')
 
 import django
 django.setup()
 
-from catalog.models import Book, BookInstance, Language, Genre, Author
-
+from catalog.models import Book, BookInstance, Genre, Author
+from django.contrib.auth.models import User
 
 def populate():
-
-    languages = [
-        {'name': 'English'},
-        {'name': 'Spanish'}
-    ]
 
     genres = [
         {'name': 'Horror'},
@@ -49,7 +38,6 @@ def populate():
             'author': {'first_name': authors[0]['first_name'], 'last_name': authors[0]['last_name']},
             'isbn': '9780345806789',
             'genre': [genres[0]['name'], genres[1]['name']],
-            'language': languages[0]['name']
         },
         {
             'title': 'Cementerio de Animales',
@@ -57,7 +45,6 @@ def populate():
             'author': {'first_name':authors[0]['first_name'], 'last_name':authors[0]['last_name']},
             'isbn': '9780450057694',
             'genre': genres[0]['name'],
-            'language': languages[1]['name']
         },
         {
             'title': 'I Robot',
@@ -65,7 +52,6 @@ def populate():
             'author': {'first_name':authors[1]['first_name'], 'last_name':authors[1]['last_name']},
             'isbn': '9780194242363',
             'genre': [genres[2]['name']],
-            'language': languages[0]['name']
         },
         {
             'title': 'Viaje Alucinante',
@@ -73,7 +59,6 @@ def populate():
             'author': {'first_name':authors[1]['first_name'], 'last_name':authors[1]['last_name']},
             'isbn': '9780553275728',
             'genre': [genres[2]['name']],
-            'language': languages[1]['name']
         }
     ]
 
@@ -81,8 +66,8 @@ def populate():
         {
         'book': books[0]['title'],
         'imprint': 'It was restored three years ago.',
-        'due_back': '2021-10-10',
-        'status': 'o'
+        'due_back': '',
+        'status': 'a'
         },
         {
         'book': books[0]['title'],
@@ -93,8 +78,8 @@ def populate():
         {
         'book': books[1]['title'],
         'imprint': 'Nueva edición comprada hace dos años.',
-        'due_back': '2021-10-20',
-        'status': 'o'
+        'due_back': '',
+        'status': 'a'
         },
         {
         'book': books[2]['title'],
@@ -110,10 +95,6 @@ def populate():
         }
     ]
 
-
-    for lan in languages:
-        lang = Language(name=lan['name'])
-        lang.save()
 
     for gen in genres:
         genr = Genre(name=gen['name'])
@@ -131,14 +112,12 @@ def populate():
         t    = bo['title']
         s    = bo['summary']
         isb  = bo['isbn']
-        l    = bo['language']
         g    = bo['genre']
         a_fn = bo['author']['first_name']
         a_ln = bo['author']['last_name']
 
         aut  = Author.objects.filter(first_name__contains=a_fn, last_name__contains=a_ln).first()
-        lang = Language.objects.filter(name__contains=l).first()
-        new_book = Book(title=t, isbn=isb, summary=s, author=aut, language=lang)
+        new_book = Book(title=t, isbn=isb, summary=s, author=aut)
         new_book.save() # A first save is convenient to avoid Foreign Key problems with the N-M relation
         for ge in g:
             gen = Genre.objects.filter(name__contains=ge).first()
@@ -154,8 +133,27 @@ def populate():
         new_book_instance = BookInstance(book=bok, imprint=bi['imprint'], due_back=db, status=bi['status'])
         new_book_instance.save()
 
+def super_user():
+        user = User.objects.create_user(username='admin',
+                                first_name='John',
+                                is_staff=True,
+                                is_superuser=True,
+                                last_name='Wick',
+                                email='john@mail.com',
+                                password='admin2023')
+        user.save()
+
+def clean():
+    Book.objects.all().delete()
+    BookInstance.objects.all().delete()
+    Genre.objects.all().delete()
+    Author.objects.all().delete()
+    User.objects.all().delete()
+
 
 if __name__ == '__main__':
     print("Starting catalog population script...")
+    clean()
     populate()
+    super_user()
     print("Done!")

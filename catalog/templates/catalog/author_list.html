@@ -8,12 +8,15 @@
 
       {% for author in author_list %}
       <li>
-        <a href="{{ author.get_absolute_url }}">{{ author.last_name }}, {{ author.first_name }} ({{ author.date_of_birth }} - {%if author.date_of_death %} {{ author.date_of_death }} {% endif %})</a>
+        <a href="{{ author.get_absolute_url }}">{{ author.last_name }}, {{ author.first_name}}</a> 
+        [<a href="{% url 'author_update' author.id %}">Edit</a>]
+        [<a href="{% url 'author_delete' author.id %}">Delete</a>]
       </li>
       {% endfor %}
 
     </ul>
     {% else %}
-      <p>There are no books in the library.</p>
+      <p>There are no authors in the library.</p>
     {% endif %}
+    <p>[<a href="{% url 'author_create' %}">New Author</a>]</p>
 {% endblock %}
